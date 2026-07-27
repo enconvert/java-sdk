@@ -1,0 +1,70 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
+plugins {
+    id 'java-library'
+    id 'com.vanniktech.maven.publish' version '0.30.0'
+}
+
+group = 'com.enconvert'
+version = '0.0.1'
+description = 'Enconvert SDK — read any page or file into agent-ready Markdown/JSON/screenshots, every read scored. V2 perception + file conversion.'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Gson is the SDK's only third-party dependency (HTTP is java.net.http.HttpClient, JDK 11+).
+    api 'com.google.code.gson:gson:2.11.0'
+
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// Publishes to the Sonatype Central Portal with GPG signing. Credentials + key
+// come from ~/.gradle/gradle.properties (mavenCentralUsername / mavenCentralPassword
+// / signingInMemoryKey / signingInMemoryKeyPassword). The plugin builds the
+// sources + javadoc jars automatically.
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+
+    coordinates('com.enconvert', 'enconvert-sdk', '0.0.1')
+
+    pom {
+        name = 'Enconvert Java SDK'
+        description = 'Enconvert SDK — read any page or file into agent-ready Markdown/JSON/screenshots, every read scored. V2 perception + file conversion.'
+        inceptionYear = '2026'
+        url = 'https://github.com/conversionapi/java-sdk'
+        licenses {
+            license {
+                name = 'MIT License'
+                url = 'https://opensource.org/licenses/MIT'
+                distribution = 'https://opensource.org/licenses/MIT'
+            }
+        }
+        developers {
+            developer {
+                id = 'enconvert'
+                name = 'Enconvert'
+                email = 'support@enconvert.com'
+                url = 'https://enconvert.com'
+            }
+        }
+        scm {
+            url = 'https://github.com/conversionapi/java-sdk'
+            connection = 'scm:git:git://github.com/conversionapi/java-sdk.git'
+            developerConnection = 'scm:git:ssh://git@github.com/conversionapi/java-sdk.git'
+        }
+    }
+}
