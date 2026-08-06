@@ -39,7 +39,7 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 
-    coordinates('com.enconvert', 'enconvert-sdk', '0.0.1')
+    coordinates('com.enconvert', 'enconvert-sdk', '0.1.0')
 
     pom {
         name = 'Enconvert Java SDK'
