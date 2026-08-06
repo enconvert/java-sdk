@@ -40,6 +40,8 @@ final class V2Serializers {
         if (o.blockResources() != null) out.put("block_resources", o.blockResources());
         if (o.respectRobots() != null) out.put("respect_robots", o.respectRobots());
         if (o.mobile() != null) out.put("mobile", o.mobile());
+        if (o.onlyMainContent() != null) out.put("only_main_content", o.onlyMainContent());
+        if (o.directDownload() != null) out.put("direct_download", o.directDownload());
         return out;
     }
 
@@ -66,6 +68,7 @@ final class V2Serializers {
         if (o.blockResources() != null) out.put("block_resources", o.blockResources());
         if (o.respectRobots() != null) out.put("respect_robots", o.respectRobots());
         if (o.mobile() != null) out.put("mobile", o.mobile());
+        if (o.onlyMainContent() != null) out.put("only_main_content", o.onlyMainContent());
         return out;
     }
 

@@ -15,6 +15,10 @@ public record PerceiveResult(
         String contentHash,
         /** 0.0-1.0 render quality score. */
         Double renderQuality,
+        /** HTTP status of the final main-document response. */
+        Integer statusCode,
+        /** Named render-quality deductions that fired, e.g. {"http_error": 0.7}. Empty on a clean render. */
+        Map<String, Double> deductions,
         boolean cacheHit,
         /** Keyed by output name (e.g. "markdown", "screenshot_full_page"). */
         Map<String, V2OutputArtifact> outputs,
@@ -26,5 +30,7 @@ public record PerceiveResult(
         int costCents,
         Integer durationMs,
         String error,
-        List<String> warnings) {
+        List<String> warnings,
+        /** Echo of the request options the server honoured (secrets redacted to booleans). Null when the server omits it. */
+        JsonObject optionsEcho) {
 }

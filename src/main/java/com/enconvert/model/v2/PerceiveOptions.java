@@ -28,6 +28,8 @@ public final class PerceiveOptions {
     private final List<String> blockResources;
     private final Boolean respectRobots;
     private final Boolean mobile;
+    private final Boolean onlyMainContent;
+    private final Boolean directDownload;
 
     private PerceiveOptions(Builder b) {
         this.outputs = b.outputs;
@@ -48,6 +50,8 @@ public final class PerceiveOptions {
         this.blockResources = b.blockResources;
         this.respectRobots = b.respectRobots;
         this.mobile = b.mobile;
+        this.onlyMainContent = b.onlyMainContent;
+        this.directDownload = b.directDownload;
     }
 
     /** Artifacts to produce. Default: ["markdown", "structured"]. See {@link V2Enums.PerceiveOutputs}. */
@@ -135,6 +139,16 @@ public final class PerceiveOptions {
         return mobile;
     }
 
+    /** Strip site chrome (nav, header, footer, cookie banners) from the markdown artifact and main_content extract. API default: true. */
+    public Boolean onlyMainContent() {
+        return onlyMainContent;
+    }
+
+    /** Respond with the artifact bytes directly (perceive only — perceiveBatch rejects it with 422). Requires exactly one artifact-producing output. */
+    public Boolean directDownload() {
+        return directDownload;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -158,6 +172,8 @@ public final class PerceiveOptions {
         List<String> blockResources;
         Boolean respectRobots;
         Boolean mobile;
+        Boolean onlyMainContent;
+        Boolean directDownload;
 
         Builder() {
         }
@@ -249,6 +265,16 @@ public final class PerceiveOptions {
 
         public Builder mobile(boolean mobile) {
             this.mobile = mobile;
+            return this;
+        }
+
+        public Builder onlyMainContent(boolean onlyMainContent) {
+            this.onlyMainContent = onlyMainContent;
+            return this;
+        }
+
+        public Builder directDownload(boolean directDownload) {
+            this.directDownload = directDownload;
             return this;
         }
 

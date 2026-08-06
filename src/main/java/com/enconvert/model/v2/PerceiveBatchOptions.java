@@ -31,6 +31,7 @@ public final class PerceiveBatchOptions {
     private final List<String> blockResources;
     private final Boolean respectRobots;
     private final Boolean mobile;
+    private final Boolean onlyMainContent;
     private final String outputMode;
 
     private PerceiveBatchOptions(Builder b) {
@@ -52,6 +53,7 @@ public final class PerceiveBatchOptions {
         this.blockResources = b.blockResources;
         this.respectRobots = b.respectRobots;
         this.mobile = b.mobile;
+        this.onlyMainContent = b.onlyMainContent;
         this.outputMode = b.outputMode;
     }
 
@@ -127,6 +129,11 @@ public final class PerceiveBatchOptions {
         return mobile;
     }
 
+    /** Strip site chrome (nav, header, footer, cookie banners) from the markdown artifact and main_content extract. API default: true. */
+    public Boolean onlyMainContent() {
+        return onlyMainContent;
+    }
+
     /** "manifest" (default) or "zip" (bundle all artifacts once complete). See {@link V2Enums.PerceiveBatchOutputMode}. */
     public String outputMode() {
         return outputMode;
@@ -155,6 +162,7 @@ public final class PerceiveBatchOptions {
         private List<String> blockResources;
         private Boolean respectRobots;
         private Boolean mobile;
+        private Boolean onlyMainContent;
         private String outputMode;
 
         private Builder() {
@@ -247,6 +255,11 @@ public final class PerceiveBatchOptions {
 
         public Builder mobile(boolean mobile) {
             this.mobile = mobile;
+            return this;
+        }
+
+        public Builder onlyMainContent(boolean onlyMainContent) {
+            this.onlyMainContent = onlyMainContent;
             return this;
         }
 

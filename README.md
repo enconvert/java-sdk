@@ -81,6 +81,18 @@ PerceiveBatchResult batch = client.v2.perceiveBatch(List.of("https://a.com", "ht
                 .outputMode("zip")
                 .build());
 PerceiveBatchResult done = client.v2.getPerceiveBatch(batch.jobId());
+
+// Direct download — stream the artifact bytes, no signed-URL round trip.
+// Requires exactly one artifact-producing output:
+com.enconvert.model.v2.PerceiveDirectResult direct = client.v2.perceiveDirect("https://example.com",
+        PerceiveOptions.builder()
+                .outputs(List.of("pdf"))
+                .build());
+java.nio.file.Files.write(java.nio.file.Path.of(direct.filename()), direct.content());
+
+// Re-download a stored artifact of an earlier operation (410 past retention):
+com.enconvert.model.v2.PerceiveDirectResult bytes =
+        client.v2.downloadPerceiveArtifact(op.operationId(), "markdown");
 ```
 
 ### Discover — enumerate a site's URLs (no rendering)

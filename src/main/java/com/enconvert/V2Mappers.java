@@ -8,6 +8,7 @@ import com.enconvert.model.v2.IngestJobSummary;
 import com.enconvert.model.v2.LookupItem;
 import com.enconvert.model.v2.LookupResult;
 import com.enconvert.model.v2.PerceiveBatchResult;
+import com.enconvert.model.v2.PerceiveDirectResult;
 import com.enconvert.model.v2.PerceiveResult;
 import com.enconvert.model.v2.V2OutputArtifact;
 import com.enconvert.model.v2.V2Tokens;
@@ -18,6 +19,8 @@ import com.enconvert.model.v2.WebhookSecret;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import java.net.http.HttpHeaders;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -57,6 +60,15 @@ final class V2Mappers {
                 }
             }
         }
+        Map<String, Double> deductions = new LinkedHashMap<>();
+        JsonObject rawDeductions = Json.optObj(d, "deductions");
+        if (rawDeductions != null) {
+            for (Map.Entry<String, JsonElement> entry : rawDeductions.entrySet()) {
+                if (entry.getValue().isJsonPrimitive() && entry.getValue().getAsJsonPrimitive().isNumber()) {
+                    deductions.put(entry.getKey(), entry.getValue().getAsDouble());
+                }
+            }
+        }
         JsonObject tokens = Json.optObj(d, "tokens");
         return new PerceiveResult(
                 Json.str(d, "operation_id", ""),
@@ -65,6 +77,8 @@ final class V2Mappers {
                 Json.optStr(d, "url_final"),
                 Json.optStr(d, "content_hash"),
                 Json.optDouble(d, "render_quality"),
+                Json.optInt(d, "status_code"),
+                deductions,
                 Json.bool(d, "cache_hit"),
                 outputs,
                 Json.optObj(d, "structured"),
@@ -73,7 +87,56 @@ final class V2Mappers {
                 Json.num(d, "cost_cents", 0),
                 Json.optInt(d, "duration_ms"),
                 Json.optStr(d, "error"),
-                Json.strArr(d, "warnings"));
+                Json.strArr(d, "warnings"),
+                Json.optObj(d, "options_echo"));
+    }
+
+    /** Builds a direct-download result from the raw body + response headers. */
+    static PerceiveDirectResult toPerceiveDirectResult(HttpResponse<byte[]> resp) {
+        HttpHeaders h = resp.headers();
+        Integer warningsCount = headerInt(h, "X-Warnings-Count");
+        return new PerceiveDirectResult(
+                resp.body(),
+                h.firstValue("Content-Type").orElse("application/octet-stream"),
+                filenameFromContentDisposition(h.firstValue("Content-Disposition").orElse(null)),
+                h.firstValue("X-Operation-Id").orElse(""),
+                h.firstValue("X-Object-Key").orElse(""),
+                "true".equals(h.firstValue("X-Cache-Hit").orElse(null)),
+                headerDouble(h, "X-Render-Quality"),
+                headerInt(h, "X-Source-Status-Code"),
+                h.firstValue("X-Content-Hash").orElse(null),
+                warningsCount != null ? warningsCount : 0);
+    }
+
+    /** Extracts the filename="..." (or bare-token) value, or null when absent. */
+    private static String filenameFromContentDisposition(String value) {
+        if (value == null) return null;
+        for (String part : value.split(";")) {
+            String trimmed = part.trim();
+            if (!trimmed.toLowerCase().startsWith("filename=")) continue;
+            String filename = trimmed.substring("filename=".length());
+            if (filename.length() >= 2 && filename.startsWith("\"") && filename.endsWith("\"")) {
+                filename = filename.substring(1, filename.length() - 1);
+            }
+            return filename.isEmpty() ? null : filename;
+        }
+        return null;
+    }
+
+    private static Double headerDouble(HttpHeaders headers, String name) {
+        try {
+            return headers.firstValue(name).map(Double::valueOf).orElse(null);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static Integer headerInt(HttpHeaders headers, String name) {
+        try {
+            return headers.firstValue(name).map(Integer::valueOf).orElse(null);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     static PerceiveBatchResult toPerceiveBatchResult(JsonObject d) {

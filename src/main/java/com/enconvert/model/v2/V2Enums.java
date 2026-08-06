@@ -17,7 +17,6 @@ public final class V2Enums {
         }
 
         public static final String MARKDOWN = "markdown";
-        public static final String MARKDOWN_FIT = "markdown_fit";
         public static final String HTML_CLEANED = "html_cleaned";
         public static final String HTML_RAW = "html_raw";
         public static final String SCREENSHOT = "screenshot";

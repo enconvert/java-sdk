@@ -14,6 +14,7 @@ import com.enconvert.model.v2.LookupOptions;
 import com.enconvert.model.v2.LookupResult;
 import com.enconvert.model.v2.PerceiveBatchOptions;
 import com.enconvert.model.v2.PerceiveBatchResult;
+import com.enconvert.model.v2.PerceiveDirectResult;
 import com.enconvert.model.v2.PerceiveOptions;
 import com.enconvert.model.v2.PerceiveResult;
 import com.enconvert.model.v2.SnapshotListOptions;
@@ -29,6 +30,7 @@ import com.enconvert.model.v2.WebhookRetryResult;
 import com.enconvert.model.v2.WebhookSecret;
 import com.google.gson.JsonObject;
 
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -104,6 +106,58 @@ public final class EnconvertV2 {
     /** Poll a perceive batch by jobId. Items fill in as URLs complete. */
     public PerceiveBatchResult getPerceiveBatch(String jobId) {
         return V2Mappers.toPerceiveBatchResult(get("/v2/perceive/batch/" + V2Serializers.encode(jobId)));
+    }
+
+    /** Artifact-producing outputs accepted by {@link #perceiveDirect} (everything except "structured"). */
+    private static final List<String> ARTIFACT_OUTPUTS = List.of(
+            "markdown", "html_cleaned", "html_raw", "screenshot",
+            "screenshot_full_page", "pdf", "links", "images");
+
+    public PerceiveDirectResult perceiveDirect(String url) {
+        return perceiveDirect(url, PerceiveOptions.builder().build());
+    }
+
+    /**
+     * Render one URL and stream the artifact bytes back directly
+     * (direct_download), skipping the JSON envelope and the signed-URL round
+     * trip. Requires exactly one artifact-producing output in opts.outputs;
+     * metadata is returned via response headers.
+     */
+    public PerceiveDirectResult perceiveDirect(String url, PerceiveOptions opts) {
+        List<String> outputs = opts.outputs() != null ? opts.outputs() : List.of("markdown", "structured");
+        long artifactCount = outputs.stream().filter(ARTIFACT_OUTPUTS::contains).count();
+        if (artifactCount != 1) {
+            throw new IllegalArgumentException(
+                    "perceiveDirect: requires exactly one artifact-producing output ("
+                            + String.join(", ", ARTIFACT_OUTPUTS) + "); got " + artifactCount);
+        }
+        Map<String, Object> body = V2Serializers.perceiveOptions(opts);
+        body.put("url", url);
+        body.put("direct_download", true);
+        byte[] payload = transport.gson.toJson(body).getBytes(StandardCharsets.UTF_8);
+        HttpResponse<byte[]> resp = transport.send("/v2/perceive", "POST", payload, "application/json");
+        transport.raiseForStatus(resp);
+        return V2Mappers.toPerceiveDirectResult(resp);
+    }
+
+    public PerceiveDirectResult downloadPerceiveArtifact(String operationId) {
+        return downloadPerceiveArtifact(operationId, null);
+    }
+
+    /**
+     * Stream one stored artifact of an earlier perceive operation. output may
+     * be null when the operation produced exactly one artifact (otherwise 400
+     * listing the available outputs); 410 once the artifact passes the plan's
+     * retention window.
+     */
+    public PerceiveDirectResult downloadPerceiveArtifact(String operationId, String output) {
+        String path = "/v2/perceive/" + V2Serializers.encode(operationId) + "?direct_download=true";
+        if (output != null) {
+            path += "&output=" + V2Serializers.encode(output);
+        }
+        HttpResponse<byte[]> resp = transport.send(path, "GET", null, null);
+        transport.raiseForStatus(resp);
+        return V2Mappers.toPerceiveDirectResult(resp);
     }
 
     // ------------------------------------------------------------------
