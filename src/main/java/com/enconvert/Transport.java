@@ -26,17 +26,25 @@ import java.time.Duration;
  */
 final class Transport {
 
+    // Keep in sync with the release version (mavenPublishing coordinates in build.gradle).
+    static final String VERSION = "0.1.1";
+
+    /** User-Agent sent on every API request, used for traffic attribution. */
+    static final String DEFAULT_USER_AGENT = "enconvert-sdk/" + VERSION + " (java)";
+
     final Gson gson = new Gson();
 
     private final String apiKey;
     private final String baseUrl;
     private final Duration timeout;
+    private final String userAgent;
     private final HttpClient httpClient;
 
-    Transport(String apiKey, String baseUrl, Duration timeout) {
+    Transport(String apiKey, String baseUrl, Duration timeout, String userAgent) {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
         this.timeout = timeout;
+        this.userAgent = userAgent != null ? userAgent : DEFAULT_USER_AGENT;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(timeout)
                 .build();
@@ -50,6 +58,7 @@ final class Transport {
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl + path))
                 .timeout(timeout)
                 .header("X-API-Key", apiKey)
+                .header("User-Agent", userAgent)
                 .method(method, publisher);
         if (contentType != null) {
             builder.header("Content-Type", contentType);

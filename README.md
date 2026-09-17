@@ -12,7 +12,7 @@ Read any web page or file into clean Markdown, JSON, or screenshots, and get a `
 
 ```groovy
 dependencies {
-    implementation 'com.enconvert:enconvert-sdk:0.0.1'
+    implementation 'com.enconvert:enconvert-sdk:0.1.1'
 }
 ```
 
@@ -22,7 +22,7 @@ dependencies {
 <dependency>
     <groupId>com.enconvert</groupId>
     <artifactId>enconvert-sdk</artifactId>
-    <version>0.0.1</version>
+    <version>0.1.1</version>
 </dependency>
 ```
 

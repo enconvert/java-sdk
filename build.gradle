@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.enconvert'
-version = '0.1.0'
+version = '0.1.1'
 description = 'Enconvert SDK — read any page or file into agent-ready Markdown/JSON/screenshots, every read scored. V2 perception + file conversion.'
 
 java {
@@ -39,13 +39,13 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 
-    coordinates('com.enconvert', 'enconvert-sdk', '0.1.0')
+    coordinates('com.enconvert', 'enconvert-sdk', '0.1.1')
 
     pom {
         name = 'Enconvert Java SDK'
         description = 'Enconvert SDK — read any page or file into agent-ready Markdown/JSON/screenshots, every read scored. V2 perception + file conversion.'
         inceptionYear = '2026'
-        url = 'https://github.com/conversionapi/java-sdk'
+        url = 'https://github.com/enconvert/java-sdk'
         licenses {
             license {
                 name = 'MIT License'
@@ -62,9 +62,9 @@ mavenPublishing {
             }
         }
         scm {
-            url = 'https://github.com/conversionapi/java-sdk'
-            connection = 'scm:git:git://github.com/conversionapi/java-sdk.git'
-            developerConnection = 'scm:git:ssh://git@github.com/conversionapi/java-sdk.git'
+            url = 'https://github.com/enconvert/java-sdk'
+            connection = 'scm:git:git://github.com/enconvert/java-sdk.git'
+            developerConnection = 'scm:git:ssh://git@github.com/enconvert/java-sdk.git'
         }
     }
 }

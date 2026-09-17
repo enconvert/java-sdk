@@ -65,12 +65,16 @@ public final class Enconvert {
     }
 
     public Enconvert(String apiKey, String baseUrl, Duration timeout) {
+        this(apiKey, baseUrl, timeout, null);
+    }
+
+    private Enconvert(String apiKey, String baseUrl, Duration timeout, String userAgent) {
         if (apiKey == null || apiKey.isEmpty()) {
             throw new IllegalArgumentException("Enconvert: 'apiKey' is required");
         }
         String normalizedBaseUrl = (baseUrl == null ? DEFAULT_BASE_URL : baseUrl).replaceAll("/+$", "");
         Duration effectiveTimeout = timeout != null ? timeout : Duration.ofMillis(DEFAULT_TIMEOUT_MS);
-        this.transport = new Transport(apiKey, normalizedBaseUrl, effectiveTimeout);
+        this.transport = new Transport(apiKey, normalizedBaseUrl, effectiveTimeout, userAgent);
         this.v2 = new EnconvertV2(transport);
     }
 
@@ -78,11 +82,12 @@ public final class Enconvert {
         return new Builder(apiKey);
     }
 
-    /** Builder for {@link Enconvert} with optional {@code baseUrl} / {@code timeout} overrides. */
+    /** Builder for {@link Enconvert} with optional {@code baseUrl} / {@code timeout} / {@code userAgent} overrides. */
     public static final class Builder {
         private final String apiKey;
         private String baseUrl = DEFAULT_BASE_URL;
         private Duration timeout = Duration.ofMillis(DEFAULT_TIMEOUT_MS);
+        private String userAgent;
 
         private Builder(String apiKey) {
             this.apiKey = apiKey;
@@ -100,8 +105,17 @@ public final class Enconvert {
             return this;
         }
 
+        /**
+         * Override the User-Agent sent on every API request, used for traffic
+         * attribution. Defaults to {@code enconvert-sdk/<version> (java)}.
+         */
+        public Builder userAgent(String userAgent) {
+            this.userAgent = userAgent;
+            return this;
+        }
+
         public Enconvert build() {
-            return new Enconvert(apiKey, baseUrl, timeout);
+            return new Enconvert(apiKey, baseUrl, timeout, userAgent);
         }
     }
 
